@@ -1,47 +1,71 @@
 package com.ifpb.marllon_anisio.flashcards
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.activity.viewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.rememberNavController
+import com.ifpb.marllon_anisio.flashcards.data.local.FlashcardDatabase
+import com.ifpb.marllon_anisio.flashcards.data.repository.FlashcardRepository
+import com.ifpb.marllon_anisio.flashcards.ui.navigation.FlashcardNavGraph
 import com.ifpb.marllon_anisio.flashcards.ui.theme.FlashcardsTheme
+import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.CardManagementViewModel
+import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.DeckViewModel
+import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.QuizViewModel
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            FlashcardsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+
+    private val database by lazy { FlashcardDatabase.getDatabase(this) }
+    private val repository by lazy { FlashcardRepository(database.dao()) }
+
+    private val viewModelFactory by lazy {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return when {
+                    modelClass.isAssignableFrom(DeckViewModel::class.java) -> 
+                        DeckViewModel(repository) as T
+                    modelClass.isAssignableFrom(QuizViewModel::class.java) -> 
+                        QuizViewModel(repository) as T
+                    modelClass.isAssignableFrom(CardManagementViewModel::class.java) -> 
+                        CardManagementViewModel(repository) as T
+                    else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    private val deckViewModel: DeckViewModel by viewModels { viewModelFactory }
+    private val quizViewModel: QuizViewModel by viewModels { viewModelFactory }
+    private val cardManagementViewModel: CardManagementViewModel by viewModels { viewModelFactory }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FlashcardsTheme {
-        Greeting("Android")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        try {
+            // Seeding is now safer and only happens if needed
+            deckViewModel.seedDataIfEmpty()
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error during startup", e)
+            Toast.makeText(this, "Erro ao carregar banco de dados", Toast.LENGTH_LONG).show()
+        }
+
+        enableEdgeToEdge()
+        setContent {
+            FlashcardsTheme {
+                val navController = rememberNavController()
+                FlashcardNavGraph(
+                    navController = navController,
+                    deckViewModel = deckViewModel,
+                    quizViewModel = quizViewModel,
+                    cardManagementViewModel = cardManagementViewModel
+                )
+            }
+        }
     }
 }
