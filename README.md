@@ -1,59 +1,58 @@
-# Flashcards - Aplicativo de Estudo com Repetição Espaçada
+# 📇 Flashcards: Domine qualquer assunto, um card por vez.
 
-Este projeto foi desenvolvido como parte de um desafio técnico para demonstrar conhecimentos avançados em **Modern Android Development (MAD)**, utilizando **Jetpack Compose**, **Clean Architecture** e persistência de dados robusta.
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0-blue.svg)
+![Compose](https://img.shields.io/badge/Jetpack_Compose-Material_3-green.svg)
+![Platform](https://img.shields.io/badge/Platform-Android-brightgreen.svg)
 
-## 🎯 Objetivo do Aplicativo
-O **Flashcards** resolve o problema de retenção de conhecimento a longo prazo. Ele permite que usuários criem baralhos personalizados de cartões de estudo (pergunta e resposta), gerenciem seu conteúdo e realizem sessões de quiz interativas para testar seus conhecimentos. É uma ferramenta ideal para estudantes, desenvolvedores e qualquer pessoa que deseje memorizar conceitos complexos de forma eficiente.
-
----
-
-## 🏗️ Descritivo da Arquitetura e Código
-O aplicativo segue os princípios da **Clean Architecture**, dividido em camadas bem definidas para garantir testabilidade e manutenção:
-
-### 1. Camada de Domain (Modelos e Lógica de Negócio)
-- **`Models.kt`**: Define as entidades principais (`Deck`, `Flashcard`) e o estado da UI (`QuizUiState`). Inclui validações de integridade (ex: impede nomes ou perguntas vazias).
-
-### 2. Camada de Data (Persistência e Repositório)
-- **Room Database**: Utiliza o SQLite para salvar dados permanentemente.
-    - **Foreign Keys**: Implementadas com `CASCADE DELETE`, garantindo que ao excluir um baralho, todos os seus cartões sejam removidos automaticamente.
-    - **DAO**: Interfaces reativas que retornam `Flow`, permitindo que a UI se atualize automaticamente quando o banco de dados muda.
-- **Repository Pattern**: Centraliza o acesso aos dados, tratando erros e expondo resultados via o padrão `Result`.
-
-### 3. Camada de UI (ViewModels e Screens)
-- **ViewModels**: Gerenciam o estado da tela de forma reativa:
-    - `DeckViewModel`: Listagem e criação de baralhos.
-    - `QuizViewModel`: Lógica da sessão de estudo (embaralhamento e pontuação).
-    - `CardManagementViewModel`: Gestão específica de cartões dentro de um baralho.
-- **Navegação**: Utiliza o **Type-Safe Navigation Compose**, garantindo que a transição entre telas seja segura e livre de erros de digitação em rotas.
+O **Flashcards** é uma ferramenta de estudo focada em eficiência e retenção de memória a longo prazo. Este aplicativo foi desenvolvido para transformar o aprendizado de conceitos complexos em sessões rápidas, interativas e focadas.
 
 ---
 
-## 🎨 Utilização do Jetpack Compose
-O aplicativo foi construído **100% em Jetpack Compose**, aproveitando as melhores funcionalidades do toolkit:
+## 💡 O que são Flashcards?
 
-- **Declarative UI**: Toda a interface é definida via funções `@Composable`, facilitando a leitura e modificação.
-- **State Hoisting**: O estado é mantido nas ViewModels e "hasteado" para os componentes, tornando-os stateless e fáceis de testar.
-- **Animações**: Utilização de `AnimatedContent` e `AnimatedVisibility` para transições suaves entre perguntas e respostas, proporcionando uma experiência de usuário moderna.
-- **Material Design 3**: Implementação rigorosa do Material 3, com suporte a cores dinâmicas, `ElevatedCards`, `LargeTopAppBars` e formas personalizadas (`shapes`).
-- **UDF (Unidirectional Data Flow)**: Garante que os dados fluam em apenas uma direção (da ViewModel para a UI) e os eventos no sentido oposto.
+Um flashcard é, essencialmente, um cartão de memória com uma **pergunta** na frente e uma **resposta** no verso. É uma das técnicas de estudo mais poderosas que existem, baseada em dois conceitos científicos:
+
+1.  **Active Recall (Recuperação Ativa):** Ao ver a pergunta, seu cérebro é forçado a recuperar a informação, fortalecendo as conexões neurais.
+2.  **Repetição Espaçada:** O ato de revisar o que você errou com mais frequência garante que a informação saia da memória de curto prazo e vá para a de longo prazo.
 
 ---
 
-## 🚀 Execução e Telas
-O aplicativo possui um fluxo de usuário intuitivo composto por quatro áreas principais:
+## 📱 A Experiência do Aplicativo
 
-1.  **Tela de Seleção de Baralho**: Exibe a lista de temas disponíveis com suporte a criação dinâmica (Botão FAB) e exclusão.
-2.  **Gestão de Cards**: Uma área administrativa para cada baralho, onde o usuário pode adicionar novas perguntas ou remover cartões existentes.
-3.  **Sessão de Quiz**: Interface focada no estudo, mostrando o progresso atual, a pergunta e o botão de revelação animada.
-4.  **Tela de Resultados**: Feedback visual sobre o desempenho do usuário após concluir o baralho, com opção de reiniciar ou voltar ao início.
+Nesta aplicação, você tem o controle total do seu aprendizado:
+
+*   **Organização por Baralhos:** Agrupe seus estudos por temas (ex: "Programação Kotlin", "Inglês Avançado", "História").
+*   **Gestão Dinâmica:** Adicione, edite ou remova cards conforme seu conhecimento evolui.
+*   **Modo de Estudo (Quiz):** 
+    *   Interface limpa para evitar distrações.
+    *   Sistema de revelação de resposta com um toque.
+    *   Autoavaliação: Você decide se acertou ou errou, treinando sua honestidade intelectual.
+*   **Feedback de Performance:** Ao final de cada sessão, veja sua taxa de acerto e identifique onde precisa melhorar.
+
+---
+
+## 🛠️ Por dentro da Engenharia (Stack Técnica)
+
+Como arquiteto do projeto, a aplicação foi construída utilizando o que há de mais moderno no ecossistema Android para garantir fluidez e confiabilidade:
+
+### 🎨 Interface Moderna (Jetpack Compose)
+Esqueça as telas estáticas do passado. Toda a interface é **declarativa**, o que significa que as animações de transição de cards e os feedbacks visuais são suaves e integrados ao Material Design 3.
+
+### 🧠 Cérebro e Memória (MVVM + Room)
+*   **Arquitetura MVVM:** Separa a lógica de negócio (como a pontuação do quiz) da interface visual. Se o seu celular girar no meio de um estudo, você não perde seu progresso.
+*   **Banco de Dados Local (Room):** Seus baralhos são guardados no dispositivo. Estude no metrô, no avião ou em qualquer lugar, sem precisar de internet.
+
+### 🗺️ Navegação Segura (NavGraph)
+Implementamos a nova **Type-Safe Navigation** do Google. Isso garante que, ao navegar entre os baralhos e as sessões de estudo, não ocorram falhas ou erros de dados corrompidos.
 
 ---
 
-## 🧪 Qualidade e Verificação
-- **Integridade de Dados**: Banco de dados versionado (v2) com proteção contra orfandade de dados.
-- **Segurança de Navegação**: Proteção contra múltiplas navegações acidentais via `LaunchedEffect`.
-- **Testes Unitários**: Implementados para validar a lógica de negócios central nas ViewModels.
+## 🚀 Começando
+
+1.  Ao abrir o app, você encontrará baralhos de exemplo para entender a dinâmica.
+2.  Crie seu próprio baralho no botão **"+"**.
+3.  Adicione seus primeiros cards com pergunta e resposta.
+4.  Toque no baralho e comece a desafiar sua mente!
 
 ---
-**Desenvolvido por:** Marllon Anisio
-**Tecnologias:** Kotlin, Jetpack Compose, Room, Navigation Compose, Serialization, Coroutines & Flow.
+*Desenvolvido com foco em engenharia de software de alta performance por **Marllon Anísio**.*
