@@ -12,7 +12,9 @@ abstract class FlashcardDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: FlashcardDatabase? = null
-
+        /**
+         * reutilizando o singleton depois de 9 anos de padroes de projeto kkkkkkkk
+         * */
         fun getDatabase(context: Context): FlashcardDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -20,10 +22,15 @@ abstract class FlashcardDatabase : RoomDatabase() {
                     FlashcardDatabase::class.java,
                     "flashcard_database"
                 )
-                .fallbackToDestructiveMigration() // Facilitate dev phase version 2 migration
+                .fallbackToDestructiveMigration() // aqui é foda, eu to usando mas o significado é: "Ei negão, Se eu mudar a versão do banco e você não souber como migrar os dados antigos, apague tudo e comece do zero, sem choro nem vela, é isso ou crashar o app, escolha sua opção"
                 .build()
                 INSTANCE = instance
                 instance
+
+                /**
+                 * coisa ainda pra aprender: Injeção de Dependência" (Hilt ou Koin), isso é um assunto mais avançado, mas basicamente, ao invés de criar o banco de dados diretamente dentro do código, a gente pode usar uma biblioteca de injeção de dependência para gerenciar a criação e o ciclo de vida do banco de dados, isso ajuda a manter o código mais limpo e testável, além de facilitar a troca de implementações no futuro,
+                 * como por exemplo, trocar o Room por outro banco de dados sem precisar mudar o código que usa o banco.
+                 * */
             }
         }
     }
