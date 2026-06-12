@@ -10,6 +10,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun ResultsScreen(
@@ -29,6 +34,27 @@ fun ResultsScreen(
         ),
         contentAlignment = Alignment.Center
     ) {
+        val isVictory = score > 0 && score.toFloat() / totalCards >= 0.5f
+        if (isVictory) {
+            val parties = remember {
+                listOf(
+                    Party(
+                        speed = 0f,
+                        maxSpeed = 30f,
+                        damping = 0.9f,
+                        spread = 360,
+                        colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
+                        emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
+                        position = Position.Relative(0.5, 0.3)
+                    )
+                )
+            }
+            KonfettiView(
+                modifier = Modifier.fillMaxSize(),
+                parties = parties
+            )
+        }
+
         Column(
             modifier = Modifier.padding(32.dp).fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
