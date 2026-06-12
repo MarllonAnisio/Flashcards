@@ -24,6 +24,7 @@ fun DeckSelectionScreen(
     onDeckSelected: (Int) -> Unit,
     onManageDeck: (Int) -> Unit,
     onAddDeck: (String) -> Unit,
+    onEditDeck: (Deck) -> Unit,
     onDeleteDeck: (Deck) -> Unit,
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
@@ -33,6 +34,9 @@ fun DeckSelectionScreen(
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var newDeckName by remember { mutableStateOf("") }
+    
+    var deckToEdit by remember { mutableStateOf<Deck?>(null) }
+    var editDeckName by remember { mutableStateOf("") }
 
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -81,6 +85,10 @@ fun DeckSelectionScreen(
                             deck = deck,
                             onClick = { onDeckSelected(deck.id) },
                             onManage = { onManageDeck(deck.id) },
+                            onEdit = { 
+                                deckToEdit = deck
+                                editDeckName = deck.name
+                            },
                             onDelete = { onDeleteDeck(deck) }
                         )
                     }
@@ -122,6 +130,35 @@ fun DeckSelectionScreen(
             }
         )
     }
+
+    if (deckToEdit != null) {
+        AlertDialog(
+            onDismissRequest = { deckToEdit = null },
+            title = { Text("Editar Baralho") },
+            text = {
+                OutlinedTextField(
+                    value = editDeckName,
+                    onValueChange = { editDeckName = it },
+                    label = { Text("Nome do Baralho") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (editDeckName.isNotBlank() && deckToEdit != null) {
+                            onEditDeck(deckToEdit!!.copy(name = editDeckName))
+                            deckToEdit = null
+                        }
+                    }
+                ) { Text("Salvar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { deckToEdit = null }) { Text("Cancelar") }
+            }
+        )
+    }
 }
 
 @Composable
@@ -129,6 +166,7 @@ fun DeckCard(
     deck: Deck,
     onClick: () -> Unit,
     onManage: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -175,6 +213,14 @@ fun DeckCard(
                         },
                         leadingIcon = { Icon(Icons.Default.Edit, null) }
                     )
+                    DropdownMenuItem(
+                        text = { Text("Editar Nome") },
+                        onClick = { 
+                            showMenu = false
+                            onEdit() 
+                        },
+                        leadingIcon = { Icon(Icons.Default.Edit, null) }
+                    )
                     HorizontalDivider()
                     DropdownMenuItem(
                         text = { Text("Excluir Baralho") },
@@ -202,6 +248,7 @@ fun DeckSelectionPreview() {
             onDeckSelected = {},
             onManageDeck = {},
             onAddDeck = {},
+            onEditDeck = {},
             onDeleteDeck = {},
             onDismissError = {},
             decks = listOf(Deck(1, "Preview Deck"))

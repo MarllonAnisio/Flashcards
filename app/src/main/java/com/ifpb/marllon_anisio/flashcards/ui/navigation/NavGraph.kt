@@ -46,6 +46,9 @@ fun FlashcardNavGraph(
                 onAddDeck = { name ->
                     deckViewModel.addDeck(name)
                 },
+                onEditDeck = { deck ->
+                    deckViewModel.updateDeck(deck)
+                },
                 onDeleteDeck = { deck ->
                     deckViewModel.deleteDeck(deck)
                 },
@@ -68,6 +71,7 @@ fun FlashcardNavGraph(
                 isLoading = isLoading,
                 error = error,
                 onAddCard = { q, a -> cardManagementViewModel.addCard(data.deckId, q, a) },
+                onEditCard = { card -> cardManagementViewModel.updateCard(card) },
                 onDeleteCard = { card -> cardManagementViewModel.deleteCard(card) },
                 onBack = { navController.popBackStack() },
                 onDismissError = { cardManagementViewModel.clearError() }

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import com.ifpb.marllon_anisio.flashcards.domain.models.Flashcard
 fun ManageCardsScreen(
     cards: List<Flashcard>,
     onAddCard: (String, String) -> Unit,
+    onEditCard: (Flashcard) -> Unit,
     onDeleteCard: (Flashcard) -> Unit,
     onBack: () -> Unit,
     onDismissError: () -> Unit,
@@ -29,6 +31,10 @@ fun ManageCardsScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var question by remember { mutableStateOf("") }
     var answer by remember { mutableStateOf("") }
+
+    var cardToEdit by remember { mutableStateOf<Flashcard?>(null) }
+    var editQuestion by remember { mutableStateOf("") }
+    var editAnswer by remember { mutableStateOf("") }
 
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -81,8 +87,15 @@ fun ManageCardsScreen(
                                     Text(card.question, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                     Text(card.answer, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
+                                IconButton(onClick = { 
+                                    cardToEdit = card
+                                    editQuestion = card.question
+                                    editAnswer = card.answer
+                                }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                                }
                                 IconButton(onClick = { onDeleteCard(card) }) {
-                                    Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error)
+                                    Icon(Icons.Default.Delete, contentDescription = "Deletar", tint = MaterialTheme.colorScheme.error)
                                 }
                             }
                         }
@@ -127,6 +140,40 @@ fun ManageCardsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    if (cardToEdit != null) {
+        AlertDialog(
+            onDismissRequest = { cardToEdit = null },
+            title = { Text("Editar Card") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = editQuestion, 
+                        onValueChange = { editQuestion = it }, 
+                        label = { Text("Pergunta") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editAnswer, 
+                        onValueChange = { editAnswer = it }, 
+                        label = { Text("Resposta") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (editQuestion.isNotBlank() && editAnswer.isNotBlank() && cardToEdit != null) {
+                        onEditCard(cardToEdit!!.copy(question = editQuestion, answer = editAnswer))
+                        cardToEdit = null
+                    }
+                }) { Text("Salvar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { cardToEdit = null }) { Text("Cancelar") }
             }
         )
     }

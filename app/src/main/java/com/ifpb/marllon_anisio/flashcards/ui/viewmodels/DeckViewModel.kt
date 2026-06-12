@@ -45,6 +45,17 @@ class DeckViewModel(private val repository: FlashcardRepository) : ViewModel() {
         }
     }
 
+    fun updateDeck(deck: Deck) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val result = repository.updateDeck(deck)
+            if (result.isFailure) {
+                _error.value = "Falha ao atualizar baralho: ${result.exceptionOrNull()?.message}"
+            }
+            _isLoading.value = false
+        }
+    }
+
     fun seedDataIfEmpty() {
         viewModelScope.launch {
             val currentDecks = repository.getDecks().first()
