@@ -51,7 +51,25 @@ data class FlashcardEntity(
 )
 
 fun DeckEntity.toDomain() = Deck(id, name)
-fun FlashcardEntity.toDomain() = Flashcard(id, deckId, question, answer)
+fun FlashcardEntity.toDomain() = Flashcard(
+    id = id, 
+    deckId = deckId, 
+    question = question, 
+    answer = answer,
+    nextReviewDate = nextReviewDate,
+    interval = interval,
+    easeFactor = easeFactor,
+    repetitionCount = repetitionCount
+)
 
 fun Deck.toEntity() = DeckEntity(id, name)
-fun Flashcard.toEntity() = FlashcardEntity(id, deckId, question, answer)
+fun Flashcard.toEntity() = FlashcardEntity(
+    id = id, 
+    deckId = deckId, 
+    question = question, 
+    answer = answer,
+    nextReviewDate = nextReviewDate,
+    interval = interval,
+    easeFactor = easeFactor,
+    repetitionCount = repetitionCount
+)
