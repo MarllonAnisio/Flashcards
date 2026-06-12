@@ -39,8 +39,8 @@ class QuizViewModelTest {
             Flashcard(id = 1, deckId = deckId, question = "Q1", answer = "A1"),
             Flashcard(id = 2, deckId = deckId, question = "Q2", answer = "A2")
         )
-        // Ensure the flow emits
-        coEvery { repository.getCardsForDeckFlow(deckId) } returns flowOf(mockCards)
+        // Mock getDueCardsForDeck instead of getCardsForDeckFlow
+        coEvery { repository.getDueCardsForDeck(deckId, any()) } returns mockCards
 
         viewModel.startSession(deckId)
         advanceUntilIdle()
@@ -58,8 +58,10 @@ class QuizViewModelTest {
             Flashcard(id = 1, deckId = deckId, question = "Q1", answer = "A1"),
             Flashcard(id = 2, deckId = deckId, question = "Q2", answer = "A2")
         )
-        // Using flowOf with items ensures they are available
-        coEvery { repository.getCardsForDeckFlow(deckId) } returns flowOf(mockCards)
+        // Mock getDueCardsForDeck
+        coEvery { repository.getDueCardsForDeck(deckId, any()) } returns mockCards
+        // Mock updateCard
+        coEvery { repository.updateCard(any()) } returns Result.success(Unit)
 
         viewModel.startSession(deckId)
         advanceUntilIdle()
