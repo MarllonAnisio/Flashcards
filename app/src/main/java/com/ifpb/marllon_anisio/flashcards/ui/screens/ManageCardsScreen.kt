@@ -12,6 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ifpb.marllon_anisio.flashcards.domain.models.Flashcard
@@ -74,31 +77,58 @@ fun ManageCardsScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(cards) { card ->
-                        ElevatedCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(card.question, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                    Text(card.answer, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                                IconButton(onClick = { 
-                                    cardToEdit = card
-                                    editQuestion = card.question
-                                    editAnswer = card.answer
-                                }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
-                                }
-                                IconButton(onClick = { onDeleteCard(card) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Deletar", tint = MaterialTheme.colorScheme.error)
+                    items(items = cards, key = { it.id }) { card ->
+                        val haptic = LocalHapticFeedback.current
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { dismissValue ->
+                                if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onDeleteCard(card)
+                                    true
+                                } else {
+                                    false
                                 }
                             }
-                        }
+                        )
+
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            backgroundContent = {
+                                val color = MaterialTheme.colorScheme.error
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color, MaterialTheme.shapes.medium)
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Deletar", tint = MaterialTheme.colorScheme.onError)
+                                }
+                            },
+                            content = {
+                                ElevatedCard(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = MaterialTheme.shapes.medium
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(card.question, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                            Text(card.answer, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                        IconButton(onClick = { 
+                                            cardToEdit = card
+                                            editQuestion = card.question
+                                            editAnswer = card.answer
+                                        }) {
+                                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                }
+                            }
+                        )
                     }
                 }
             }
