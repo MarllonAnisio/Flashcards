@@ -54,9 +54,6 @@ class DeckViewModel(private val repository: FlashcardRepository) : ViewModel() {
                     // Letting Room generate IDs (0 in model = autoGenerate)
                     val kotlinResult = repository.addDeck(Deck(name = "Kotlin Fundamentals"))
                     if (kotlinResult.isSuccess) {
-                        // We need the ID to add cards. 
-                        // In a real scenario, addDeck might return the ID or we fetch again.
-                        // For simplicity in seed, we'll fetch the deck we just created.
                         val decks = repository.getDecks().first()
                         val kotlinDeck = decks.find { it.name == "Kotlin Fundamentals" }
                         kotlinDeck?.let { deck ->

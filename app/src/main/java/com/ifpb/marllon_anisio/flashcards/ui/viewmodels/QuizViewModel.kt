@@ -59,7 +59,7 @@ class QuizViewModel(private val repository: FlashcardRepository) : ViewModel() {
                     correctAnswers = newScore
                 )
             } else {
-                // Session finished
+                // aqui finaliza a sessão
                 state.copy(correctAnswers = newScore, currentIndex = nextIndex)
             }
         }

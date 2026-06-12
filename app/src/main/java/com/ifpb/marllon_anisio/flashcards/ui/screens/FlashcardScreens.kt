@@ -34,7 +34,6 @@ import com.ifpb.marllon_anisio.flashcards.domain.models.Flashcard
 import com.ifpb.marllon_anisio.flashcards.domain.models.QuizUiState
 import com.ifpb.marllon_anisio.flashcards.ui.theme.FlashcardsTheme
 
-// --- Screens ---
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -516,8 +515,6 @@ fun ResultsScreen(
         }
     }
 }
-
-// --- Previews ---
 
 @Preview(showBackground = true, name = "Quiz Session - Hidden")
 @Composable
