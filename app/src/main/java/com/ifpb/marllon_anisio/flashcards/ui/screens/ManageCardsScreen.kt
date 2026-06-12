@@ -38,6 +38,8 @@ fun ManageCardsScreen(
     var cardToEdit by remember { mutableStateOf<Flashcard?>(null) }
     var editQuestion by remember { mutableStateOf("") }
     var editAnswer by remember { mutableStateOf("") }
+    
+    var cardToDelete by remember { mutableStateOf<Flashcard?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -83,8 +85,8 @@ fun ManageCardsScreen(
                             confirmValueChange = { dismissValue ->
                                 if (dismissValue == SwipeToDismissBoxValue.EndToStart || dismissValue == SwipeToDismissBoxValue.StartToEnd) {
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onDeleteCard(card)
-                                    true
+                                    cardToDelete = card
+                                    false
                                 } else {
                                     false
                                 }
@@ -204,6 +206,28 @@ fun ManageCardsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { cardToEdit = null }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    if (cardToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { cardToDelete = null },
+            title = { Text("Excluir Cartão") },
+            text = { Text("Tem certeza que deseja excluir este cartão permanentemente?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteCard(cardToDelete!!)
+                        cardToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Excluir")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { cardToDelete = null }) { Text("Cancelar") }
             }
         )
     }
