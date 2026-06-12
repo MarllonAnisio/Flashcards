@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [DeckEntity::class, FlashcardEntity::class], version = 2)
+@Database(entities = [DeckEntity::class, FlashcardEntity::class], version = 3)
 abstract class FlashcardDatabase : RoomDatabase() {
     abstract fun dao(): FlashcardDao
 
@@ -22,7 +22,8 @@ abstract class FlashcardDatabase : RoomDatabase() {
                     FlashcardDatabase::class.java,
                     "flashcard_database"
                 )
-                .fallbackToDestructiveMigration() // aqui é foda, eu to usando mas o significado é: "Ei negão, Se eu mudar a versão do banco e você não souber como migrar os dados antigos, apague tudo e comece do zero, sem choro nem vela, é isso ou crashar o app, escolha sua opção"
+                .fallbackToDestructiveMigration() // aqui é foda, eu to usando mas o significado é: "Ei negão...
+                .fallbackToDestructiveMigrationOnDowngrade() // Garante que downgrades na versão (ex: 3 -> 1) não quebrem o app em fase de desenvolvimento
                 .build()
                 INSTANCE = instance
                 instance

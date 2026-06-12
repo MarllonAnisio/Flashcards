@@ -19,6 +19,10 @@ interface FlashcardDao {
     @Query("SELECT * FROM flashcards WHERE deckId = :deckId")
     fun getCardsByDeckFlow(deckId: Int): Flow<List<FlashcardEntity>>
 
+    // Retorna apenas os cartões que precisam ser revisados no momento (nextReviewDate <= now)
+    @Query("SELECT * FROM flashcards WHERE deckId = :deckId AND nextReviewDate <= :now ORDER BY nextReviewDate ASC")
+    suspend fun getDueCardsForDeck(deckId: Int, now: Long): List<FlashcardEntity>
+
     @Query("SELECT COUNT(*) FROM flashcards WHERE deckId = :deckId")
     suspend fun getCardCountByDeck(deckId: Int): Int
 

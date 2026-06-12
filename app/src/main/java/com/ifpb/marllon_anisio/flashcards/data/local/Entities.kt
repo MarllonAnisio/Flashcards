@@ -42,7 +42,12 @@ data class FlashcardEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val deckId: Int,
     val question: String,
-    val answer: String
+    val answer: String,
+    // Campos persistidos no Room referentes ao estado do aprendizado (SRS)
+    val nextReviewDate: Long = System.currentTimeMillis(),
+    val interval: Int = 0,
+    val easeFactor: Float = 2.5f,
+    val repetitionCount: Int = 0
 )
 
 fun DeckEntity.toDomain() = Deck(id, name)

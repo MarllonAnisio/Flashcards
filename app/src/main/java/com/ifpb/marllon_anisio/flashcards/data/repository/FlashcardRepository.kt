@@ -27,6 +27,10 @@ class FlashcardRepository(private val dao: FlashcardDao) {
             entities.map { it.toDomain() }
         }
 
+    // Retorna a lista de cartões vencidos para o SRS
+    suspend fun getDueCardsForDeck(deckId: Int, now: Long): List<Flashcard> =
+        dao.getDueCardsForDeck(deckId, now).map { it.toDomain() }
+
     /**
      * Salientando o uso do suspend, ele é usado basicamente para dizer que a função ṕode demorar,
      * fazendo a Thread principal não travar(que é oq o usuario está vendo), quando estiver pronto a função vai ser liberada.
