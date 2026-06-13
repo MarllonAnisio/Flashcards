@@ -73,3 +73,36 @@ fun Flashcard.toEntity() = FlashcardEntity(
     easeFactor = easeFactor,
     repetitionCount = repetitionCount
 )
+
+@Entity(
+    tableName = "review_history",
+    foreignKeys = [
+        ForeignKey(
+            entity = FlashcardEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["cardId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["cardId"])]
+)
+data class ReviewHistoryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val cardId: Int,
+    val reviewDate: Long = System.currentTimeMillis(),
+    val isCorrect: Boolean
+)
+
+fun ReviewHistoryEntity.toDomain() = com.ifpb.marllon_anisio.flashcards.domain.models.ReviewHistory(
+    id = id,
+    cardId = cardId,
+    reviewDate = reviewDate,
+    isCorrect = isCorrect
+)
+
+fun com.ifpb.marllon_anisio.flashcards.domain.models.ReviewHistory.toEntity() = ReviewHistoryEntity(
+    id = id,
+    cardId = cardId,
+    reviewDate = reviewDate,
+    isCorrect = isCorrect
+)

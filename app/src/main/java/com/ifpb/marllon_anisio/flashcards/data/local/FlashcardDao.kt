@@ -54,4 +54,19 @@ interface FlashcardDao {
 
     @Query("SELECT * FROM flashcards WHERE id = :cardId")
     suspend fun getCardById(cardId: Int): FlashcardEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertReviewHistory(history: ReviewHistoryEntity)
+
+    @Query("SELECT * FROM review_history WHERE reviewDate >= :startOfDay AND reviewDate <= :endOfDay")
+    suspend fun getReviewsBetween(startOfDay: Long, endOfDay: Long): List<ReviewHistoryEntity>
+
+    @Query("SELECT reviewDate FROM review_history ORDER BY reviewDate DESC")
+    suspend fun getAllReviewDates(): List<Long>
+
+    @Query("SELECT COUNT(*) FROM review_history")
+    suspend fun getTotalReviewsCount(): Int
+
+    @Query("SELECT COUNT(*) FROM review_history WHERE isCorrect = 1")
+    suspend fun getCorrectReviewsCount(): Int
 }
