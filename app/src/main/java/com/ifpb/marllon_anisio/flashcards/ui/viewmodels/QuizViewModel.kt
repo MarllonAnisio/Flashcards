@@ -61,6 +61,9 @@ class QuizViewModel(private val repository: FlashcardRepository) : ViewModel() {
             
             // Salva a nova data de revisão no banco de dados para a próxima vez
             repository.updateCard(updatedCard)
+            
+            // Registra o hit da revisão para as estatísticas diárias
+            repository.logCardReview(currentCard.id, correct)
 
             // Avança para a próxima carta
             _uiState.update { state ->
