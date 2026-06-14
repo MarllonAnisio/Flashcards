@@ -80,4 +80,86 @@ class FlashcardRepository(private val dao: FlashcardDao) {
         Log.e("Repository", "Database error", e)
         Result.failure(e)
     }
+
+    suspend fun logCardReview(cardId: Int, isCorrect: Boolean): Result<Unit> = safeCall {
+        dao.insertReviewHistory(
+            com.ifpb.marllon_anisio.flashcards.data.local.ReviewHistoryEntity(
+                cardId = cardId,
+                isCorrect = isCorrect
+            )
+        )
+    }
+
+    suspend fun getDailyStats(): com.ifpb.marllon_anisio.flashcards.domain.models.DailyStats {
+        val calendar = java.util.Calendar.getInstance()
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        calendar.set(java.util.Calendar.MINUTE, 0)
+        calendar.set(java.util.Calendar.SECOND, 0)
+        calendar.set(java.util.Calendar.MILLISECOND, 0)
+        val startOfDay = calendar.timeInMillis
+        
+        calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        val endOfDay = calendar.timeInMillis - 1
+        
+        val todayReviews = dao.getReviewsBetween(startOfDay, endOfDay)
+        val cardsReviewedToday = todayReviews.size
+        
+        val totalReviews = try { dao.getTotalReviewsCount() } catch (e: Exception) { 0 }
+        val correctReviews = try { dao.getCorrectReviewsCount() } catch (e: Exception) { 0 }
+        val retentionRate = if (totalReviews > 0) (correctReviews.toFloat() / totalReviews.toFloat()) * 100f else 0f
+        
+        val allDates = try { dao.getAllReviewDates() } catch (e: Exception) { emptyList() }
+        val currentStreak = calculateStreak(allDates)
+        
+        return com.ifpb.marllon_anisio.flashcards.domain.models.DailyStats(
+            cardsReviewedToday = cardsReviewedToday,
+            currentStreak = currentStreak,
+            retentionRate = retentionRate
+        )
+    }
+
+    private fun calculateStreak(dates: List<Long>): Int {
+        if (dates.isEmpty()) return 0
+        
+        val uniqueDays = dates.map { 
+            val cal = java.util.Calendar.getInstance()
+            cal.timeInMillis = it
+            cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            cal.set(java.util.Calendar.MINUTE, 0)
+            cal.set(java.util.Calendar.SECOND, 0)
+            cal.set(java.util.Calendar.MILLISECOND, 0)
+            cal.timeInMillis
+        }.distinct().sortedDescending()
+        
+        var streak = 0
+        val todayCal = java.util.Calendar.getInstance()
+        todayCal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        todayCal.set(java.util.Calendar.MINUTE, 0)
+        todayCal.set(java.util.Calendar.SECOND, 0)
+        todayCal.set(java.util.Calendar.MILLISECOND, 0)
+        val today = todayCal.timeInMillis
+        
+        val yesterdayCal = java.util.Calendar.getInstance()
+        yesterdayCal.timeInMillis = today
+        yesterdayCal.add(java.util.Calendar.DAY_OF_YEAR, -1)
+        val yesterday = yesterdayCal.timeInMillis
+        
+        if (!uniqueDays.contains(today) && !uniqueDays.contains(yesterday)) {
+            return 0
+        }
+        
+        var expectedDay = if (uniqueDays.contains(today)) today else yesterday
+        for (day in uniqueDays) {
+            if (day == expectedDay) {
+                streak++
+                val nextCal = java.util.Calendar.getInstance()
+                nextCal.timeInMillis = expectedDay
+                nextCal.add(java.util.Calendar.DAY_OF_YEAR, -1)
+                expectedDay = nextCal.timeInMillis
+            } else if (day < expectedDay) {
+                break
+            }
+        }
+        return streak
+    }
 }

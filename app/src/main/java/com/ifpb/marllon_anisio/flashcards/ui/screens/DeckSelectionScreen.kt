@@ -16,7 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ifpb.marllon_anisio.flashcards.domain.models.Deck
+import com.ifpb.marllon_anisio.flashcards.domain.models.DailyStats
 import com.ifpb.marllon_anisio.flashcards.ui.theme.FlashcardsTheme
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +31,7 @@ fun DeckSelectionScreen(
     onDismissError: () -> Unit,
     modifier: Modifier = Modifier,
     decks: List<Deck> = emptyList(),
+    stats: DailyStats = DailyStats(),
     isLoading: Boolean = false,
     error: String? = null
 ) {
@@ -80,6 +83,9 @@ fun DeckSelectionScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    item {
+                        DashboardStats(stats)
+                    }
                     items(decks) { deck ->
                         DeckCard(
                             deck = deck,
@@ -237,6 +243,43 @@ fun DeckCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DashboardStats(stats: DailyStats) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                "Seu Desempenho",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatItem("Hoje", "${stats.cardsReviewedToday}", "cards")
+                StatItem("Ofensiva", "${stats.currentStreak} 🔥", "dias")
+                StatItem("Retenção", "${stats.retentionRate.roundToInt()}%", "acertos")
+            }
+        }
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String, unit: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(label, style = MaterialTheme.typography.labelMedium)
+        Text(unit, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
     }
 }
 

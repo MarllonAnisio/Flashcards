@@ -45,3 +45,18 @@ data class QuizUiState(
     val isLoading: Boolean = false,
     val error: String? = null
 )
+
+@Serializable
+data class ReviewHistory(
+    val id: Int = 0,
+    val cardId: Int,
+    val reviewDate: Long,
+    val isCorrect: Boolean
+)
+
+@Serializable
+data class DailyStats(
+    val cardsReviewedToday: Int = 0,
+    val currentStreak: Int = 0,
+    val retentionRate: Float = 0f
+)

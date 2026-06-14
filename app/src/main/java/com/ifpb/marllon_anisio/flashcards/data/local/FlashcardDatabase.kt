@@ -5,7 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [DeckEntity::class, FlashcardEntity::class], version = 3)
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+
+@Database(entities = [DeckEntity::class, FlashcardEntity::class, ReviewHistoryEntity::class], version = 4)
 abstract class FlashcardDatabase : RoomDatabase() {
     abstract fun dao(): FlashcardDao
 
@@ -15,6 +18,23 @@ abstract class FlashcardDatabase : RoomDatabase() {
         /**
          * reutilizando o singleton depois de 9 anos de padroes de projeto kkkkkkkk
          * */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `review_history` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `cardId` INTEGER NOT NULL,
+                        `reviewDate` INTEGER NOT NULL,
+                        `isCorrect` INTEGER NOT NULL,
+                        FOREIGN KEY(`cardId`) REFERENCES `flashcards`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_review_history_cardId` ON `review_history` (`cardId`)")
+            }
+        }
+
         fun getDatabase(context: Context): FlashcardDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -22,6 +42,7 @@ abstract class FlashcardDatabase : RoomDatabase() {
                     FlashcardDatabase::class.java,
                     "flashcard_database"
                 )
+                .addMigrations(MIGRATION_3_4)
                 .fallbackToDestructiveMigration() // aqui é foda, eu to usando mas o significado é: "Ei negão...
                 .fallbackToDestructiveMigrationOnDowngrade() // Garante que downgrades na versão (ex: 3 -> 1) não quebrem o app em fase de desenvolvimento
                 .build()

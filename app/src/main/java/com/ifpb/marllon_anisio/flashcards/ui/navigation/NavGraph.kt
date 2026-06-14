@@ -12,6 +12,7 @@ import com.ifpb.marllon_anisio.flashcards.ui.screens.*
 import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.CardManagementViewModel
 import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.DeckViewModel
 import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.QuizViewModel
+import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.StatsViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable object DeckSelection
@@ -24,7 +25,8 @@ fun FlashcardNavGraph(
     navController: NavHostController,
     deckViewModel: DeckViewModel,
     quizViewModel: QuizViewModel,
-    cardManagementViewModel: CardManagementViewModel
+    cardManagementViewModel: CardManagementViewModel,
+    statsViewModel: StatsViewModel
 ) {
     NavHost(navController = navController, startDestination = DeckSelection) {
         composable<DeckSelection> {
@@ -32,8 +34,14 @@ fun FlashcardNavGraph(
             val isLoading by deckViewModel.isLoading.collectAsState()
             val error by deckViewModel.error.collectAsState()
 
+            LaunchedEffect(Unit) {
+                statsViewModel.refreshStats()
+            }
+            val stats by statsViewModel.stats.collectAsState()
+
             DeckSelectionScreen(
                 decks = decks,
+                stats = stats,
                 isLoading = isLoading,
                 error = error,
                 onDeckSelected = { deckId ->

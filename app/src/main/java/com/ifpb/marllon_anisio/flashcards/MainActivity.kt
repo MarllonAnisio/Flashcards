@@ -20,6 +20,7 @@ import com.ifpb.marllon_anisio.flashcards.ui.theme.FlashcardsTheme
 import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.CardManagementViewModel
 import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.DeckViewModel
 import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.QuizViewModel
+import com.ifpb.marllon_anisio.flashcards.ui.viewmodels.StatsViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -41,6 +42,8 @@ class MainActivity : ComponentActivity() {
                         QuizViewModel(repository) as T
                     modelClass.isAssignableFrom(CardManagementViewModel::class.java) ->
                         CardManagementViewModel(repository) as T
+                    modelClass.isAssignableFrom(StatsViewModel::class.java) -> 
+                        StatsViewModel(repository) as T
                     else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
                 }
             }
@@ -50,6 +53,7 @@ class MainActivity : ComponentActivity() {
     private val deckViewModel: DeckViewModel by viewModels { viewModelFactory }
     private val quizViewModel: QuizViewModel by viewModels { viewModelFactory }
     private val cardManagementViewModel: CardManagementViewModel by viewModels { viewModelFactory }
+    private val statsViewModel: StatsViewModel by viewModels { viewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +78,8 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     deckViewModel = deckViewModel,
                     quizViewModel = quizViewModel,
-                    cardManagementViewModel = cardManagementViewModel
+                    cardManagementViewModel = cardManagementViewModel,
+                    statsViewModel = statsViewModel
                 )
             }
         }
