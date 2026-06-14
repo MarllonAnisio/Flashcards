@@ -2,26 +2,50 @@ package com.ifpb.marllon_anisio.flashcards.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ifpb.marllon_anisio.flashcards.data.local.UserPreferencesRepository
 import com.ifpb.marllon_anisio.flashcards.data.repository.FlashcardRepository
 import com.ifpb.marllon_anisio.flashcards.domain.models.Deck
 import com.ifpb.marllon_anisio.flashcards.domain.models.Flashcard
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class DeckViewModel(private val repository: FlashcardRepository) : ViewModel() {
-    
+class DeckViewModel(
+    private val repository: FlashcardRepository,
+    private val userPreferencesRepository: UserPreferencesRepository // Injetando o DataStore aqui
+) : ViewModel() {
+
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
+    // Transforma o Flow do DataStore em um StateFlow para a UI consumir com segurança
+    val appTheme: StateFlow<String> = userPreferencesRepository.appTheme
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "SYSTEM"
+        )
+
     val decks: StateFlow<List<Deck>> = repository.getDecks()
         .stateIn(
-            scope = viewModelScope, 
-            started = SharingStarted.WhileSubscribed(5000), 
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    // Função para alternar de forma cíclica entre LIGHT -> DARK -> SYSTEM
+    fun toggleTheme(currentTheme: String) {
+        viewModelScope.launch {
+            val nextTheme = when (currentTheme) {
+                "LIGHT" -> "DARK"
+                "DARK" -> "SYSTEM"
+                else -> "LIGHT"
+            }
+            userPreferencesRepository.saveThemePreference(nextTheme)
+        }
+    }
 
     fun addDeck(name: String) {
         viewModelScope.launch {
@@ -62,7 +86,6 @@ class DeckViewModel(private val repository: FlashcardRepository) : ViewModel() {
             if (currentDecks.isEmpty()) {
                 _isLoading.value = true
                 try {
-                    // Letting Room generate IDs (0 in model = autoGenerate)
                     val kotlinResult = repository.addDeck(Deck(name = "Kotlin Fundamentals"))
                     if (kotlinResult.isSuccess) {
                         val decks = repository.getDecks().first()

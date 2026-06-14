@@ -34,11 +34,18 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun FlashcardsTheme(
+    themePreference: String = "SYSTEM",
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    // Decide o modo com base na escolha persistida do usuário
+    val darkTheme = when (themePreference) {
+        "DARK" -> true
+        "LIGHT" -> false
+        else -> isSystemInDarkTheme() // Se for "SYSTEM"
+    }
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

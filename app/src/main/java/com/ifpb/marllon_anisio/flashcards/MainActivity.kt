@@ -7,10 +7,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.ifpb.marllon_anisio.flashcards.data.local.FlashcardDatabase
+import com.ifpb.marllon_anisio.flashcards.data.local.UserPreferencesRepository // Importe o novo repositório
 import com.ifpb.marllon_anisio.flashcards.data.repository.FlashcardRepository
 import com.ifpb.marllon_anisio.flashcards.ui.navigation.FlashcardNavGraph
 import com.ifpb.marllon_anisio.flashcards.ui.theme.FlashcardsTheme
@@ -23,16 +26,20 @@ class MainActivity : ComponentActivity() {
     private val database by lazy { FlashcardDatabase.getDatabase(this) }
     private val repository by lazy { FlashcardRepository(database.dao()) }
 
+    // Inicialização segura e única do seu DataStore local
+    private val userPreferencesRepository by lazy { UserPreferencesRepository(applicationContext) }
+
     private val viewModelFactory by lazy {
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return when {
-                    modelClass.isAssignableFrom(DeckViewModel::class.java) -> 
-                        DeckViewModel(repository) as T
-                    modelClass.isAssignableFrom(QuizViewModel::class.java) -> 
+                    modelClass.isAssignableFrom(DeckViewModel::class.java) ->
+                        // Adicionado o repositório do DataStore aqui
+                        DeckViewModel(repository, userPreferencesRepository) as T
+                    modelClass.isAssignableFrom(QuizViewModel::class.java) ->
                         QuizViewModel(repository) as T
-                    modelClass.isAssignableFrom(CardManagementViewModel::class.java) -> 
+                    modelClass.isAssignableFrom(CardManagementViewModel::class.java) ->
                         CardManagementViewModel(repository) as T
                     else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
                 }
@@ -46,9 +53,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         try {
-            // Seeding is now safer and only happens if needed
             deckViewModel.seedDataIfEmpty()
         } catch (e: Exception) {
             Log.e("MainActivity", "Error during startup", e)
@@ -57,7 +63,12 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            FlashcardsTheme {
+            // Coleta assíncrona do fluxo do DataStore. O Compose vai se re-desenhar
+            // automaticamente sempre que o usuário alternar o tema!
+            val currentTheme by userPreferencesRepository.appTheme.collectAsState(initial = "SYSTEM")
+
+            // Repassamos a String do DataStore ("SYSTEM", "DARK" ou "LIGHT") para o seu Theme customizado
+            FlashcardsTheme(themePreference = currentTheme) {
                 val navController = rememberNavController()
                 FlashcardNavGraph(
                     navController = navController,
